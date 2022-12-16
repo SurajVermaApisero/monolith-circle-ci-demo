@@ -50,6 +50,3 @@ workflows:
         filters:
           branches:
             only: LOCAL
-  deploy-DEV:
-   jobs:
-     - deploy-DEV 
