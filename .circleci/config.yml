@@ -46,8 +46,10 @@ workflows:
             only: DEV
   deploy-LOCAL:
    jobs:
-     - deploy-DEV:
+     - deploy-LOCAL:
         filters:
           branches:
             only: LOCAL
-       
+  deploy-DEV:
+   jobs:
+     - deploy-DEV 
