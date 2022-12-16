@@ -5,36 +5,32 @@ workflows:
   version: 2
   build-deploy:
     jobs:
-      - deploy-DEV:
+      - DEV:
           filters:
             branches:
               only:
                 - DEV
-      - deploy-LOCAL:
+      - LOCAL:
           filters:
             branches:
               only:
                 - LOCAL
-
 jobs:
-  deploy-DEV:
-    
+  DEV:
+    docker:
       - image: circleci/openjdk:8-jdk
-  
     environment:
-     cloudhubApplicationName: monolith-circleci-dev
+      cloudhubApplicationName: monolith-circleci-dev
     steps:
       - checkout
       - run:
           name: "Build Mule Application"
           command: "mvn deploy -DconnectedAppClientId=$connectedAppClientId -DconnectedAppClientSecret=$connectedAppClientSecret -DcloudhubEnvironment=$cloudhubEnvironment	-DmuleVersion=$muleVersion -DcloudhubWorkerType=$cloudhubWorkerType -DcloudhubApplicationName=$cloudhubApplicationName -DmuleDeploy"
-  deploy-LOCAL:
-    
+  LOCAL:
     docker:
-      - image: circleci/openjdk:8-jdk
-    
+      - image: circleci/openjdk:8-jdk    
     environment:
-     cloudhubApplicationName: monolith-circleci-LOCAL
+      cloudhubApplicationName: monolith-circleci-LOCAL
     steps:
       - checkout
       - run:
