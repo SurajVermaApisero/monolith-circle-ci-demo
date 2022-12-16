@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<sub-flow name="common-start-logger" doc:id="ccdac1eb-9c62-48c7-9977-7112068c773f" >
+		<logger level="INFO" doc:name="Start logger" doc:id="0804d137-468a-4c3a-8541-10ca0747b100" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;&quot;APPLICATION-NAME&quot;: p('applicationName'),&#10;&quot;ENVIRONMENT&quot;: p('mule.env'),&#10;&quot;TIMESTAMP&quot; : now(),&#10;&quot;TRANSACTION-ID&quot; : vars.correlationId,&#10;&quot;MULE-FLOW-NAME &quot;: (vars.flowName) default &quot;&quot;,&#10;&quot;MESSAGE&quot;: &quot;FLOW PROCESSING STARTED&quot; &#10;}]" category="${logCategory}" />
+	</sub-flow>
+	<sub-flow name="common-end-logger" doc:id="10524679-019c-45ed-9471-64a4f23836f3" >
+		<logger level="INFO" doc:name="End logger" doc:id="0b595be5-12bd-4ea3-86bd-ca3575e0e0d8" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;&quot;APPLICATION-NAME&quot;: p('applicationName'),&#10;&quot;ENVIRONMENT&quot;: p('mule.env'),&#10;&quot;TIMESTAMP&quot; : now(),&#10;&quot;TRANSACTION-ID&quot; : vars.correlationId,&#10;&quot;MULE-FLOW-NAME &quot;: (vars.flowName) default &quot;&quot;,&#10;&quot;MESSAGE&quot;: &quot;FLOW PROCESSING ENDED&quot; &#10;}]" category="${logCategory}" />
+	</sub-flow>
+	</mule>

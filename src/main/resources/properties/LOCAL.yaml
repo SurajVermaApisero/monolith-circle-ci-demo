@@ -1,0 +1,8 @@
+https:
+  host: "0.0.0.0"
+  port: "8082"
+  
+tls:
+  keystore: 
+    alias: "monolith-server"
+    path: "monolith-keystore.jks"

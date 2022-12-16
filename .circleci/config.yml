@@ -1,0 +1,53 @@
+# Use the latest 2.1 version of CircleCI pipeline process engine.
+# See: https://circleci.com/docs/2.0/configuration-reference
+version: 2.1
+
+# Define a job to be invoked later in a workflow.
+# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
+jobs:
+  deploy-DEV:
+    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
+    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
+    docker:
+      - image: circleci/openjdk:8-jdk
+    # Add steps to the job
+    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
+    environment:
+     cloudhubApplicationName: monolith-circleci-dev
+    steps:
+      - checkout
+      - run:
+          name: "Build Mule Application"
+          command: "mvn deploy -DconnectedAppClientId=$connectedAppClientId -DconnectedAppClientSecret=$connectedAppClientSecret -DcloudhubEnvironment=$cloudhubEnvironment	-DmuleVersion=$muleVersion -DcloudhubWorkerType=$cloudhubWorkerType -DcloudhubApplicationName=$cloudhubApplicationName -DmuleDeploy"
+  deploy-LOCAL:
+    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
+    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
+    docker:
+      - image: circleci/openjdk:8-jdk
+    # Add steps to the job
+    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
+    environment:
+     cloudhubApplicationName: monolith-circleci-LOCAL
+    steps:
+      - checkout
+      - run:
+          name: "Deploy Mule App"
+          command: "mvn deploy -DconnectedAppClientId=$connectedAppClientId -DconnectedAppClientSecret=$connectedAppClientSecret -DcloudhubEnvironment=$cloudhubEnvironment	-DmuleVersion=$muleVersion -DcloudhubWorkerType=$cloudhubWorkerType -DcloudhubApplicationName=$cloudhubApplicationName -DmuleDeploy"
+
+# Invoke jobs via workflows
+# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+workflows:
+  version: 2
+  deploy-DEV:
+   jobs:
+     - deploy-DEV:
+        filters:
+          branches:
+            only: DEV
+  deploy-LOCAL:
+   jobs:
+     - deploy-DEV:
+        filters:
+          branches:
+            only: LOCAL
+       

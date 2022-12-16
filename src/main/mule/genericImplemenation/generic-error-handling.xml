@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:cloudhub="http://www.mulesoft.org/schema/mule/cloudhub"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/cloudhub http://www.mulesoft.org/schema/mule/cloudhub/current/mule-cloudhub.xsd">
+	<sub-flow name="log-error-details"
+		doc:id="362119c2-3778-4178-ae56-d62685b120e7">
+		<logger level="INFO" doc:name="Log the error details"
+			doc:id="b64dd5d9-d10b-413b-bf46-c7a522f36e56" message="#[payload]" />
+	</sub-flow>
+	<error-handler name="generic-global-error-handler-REST">
+		<on-error-continue enableNotifications="true"
+			logException="false" doc:name="On Error Propagate"
+			doc:id="28e1e24a-40e3-4eff-9e74-608cd3b97f52"
+			type="MULE:COMPOSITE_ROUTING">
+			<ee:transform doc:name="Copy_of_Setting Http Status"
+				doc:id="f769c7aa-7c73-4d0e-87ca-10d56411f2be">
+				<ee:message>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="httpStatus"><![CDATA[%dw 2.0 
+output application/json 
+---
+error.errorMessage.attributes.statusCode default 500
+]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<flow-ref
+				doc:name="Flow Reference to common-error-sub-flow-REST"
+				doc:id="d5dfc56a-b6b3-439a-a7dd-2c3759fd68cd"
+				name="common-error-sub-flow-REST" />
+		</on-error-continue>
+		<on-error-propagate enableNotifications="true"
+			logException="false" doc:name="On Error Propagate"
+			doc:id="1f131d5b-0730-4636-a2d7-66bae8d74f88" type="ANY">
+			<ee:transform doc:name="Setting Http Status"
+				doc:id="8377ddc7-d8a0-4cd7-8925-fa1e182228a5">
+				<ee:message />
+				<ee:variables>
+					<ee:set-variable variableName="httpStatus"><![CDATA[%dw 2.0 
+output application/json 
+---
+error.errorMessage.attributes.statusCode default 500
+]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<flow-ref
+				doc:name="Flow Reference to common-error-sub-flow-REST"
+				doc:id="1f3ba0d6-38a0-4c5e-9993-d4a73ffb3906"
+				name="common-error-sub-flow-REST" />
+		</on-error-propagate>
+	</error-handler>
+	<sub-flow name="common-error-sub-flow-REST"
+		doc:id="bc339449-0792-4e22-bf51-9bbfceff88e6">
+		<ee:transform doc:name="Error Payload"
+			doc:id="51515656-a147-43fb-b44b-674860c130f5">
+			<ee:message>
+				<ee:set-payload><![CDATA[output application/json
+var responseDescription=  if (vars.errorDescription.responseDescription?)  vars.errorDescription.responseDescription 
+                          else  error.description default ""
+---
+if(error.errorType.identifier == "COMPOSITE_ROUTING")
+
+{
+	"ERROR": {
+		"APPLICATION-NAME": p('applicationName'),
+		"ENVIRONMENT": p('mule.env'),
+		"TIMESTAMP": now(),
+		"TRANSACTION-ID": vars.correlationId,
+		"ERROR-CODE": (if ( !isEmpty(vars.httpStatus) ) vars.httpStatus else (flatten([message.error])..statusCode[0])) default 500,
+	},
+	"PARALLEL-FOR-EACH-ERROR-DETAILS": error.errors map ((item,index)-> {
+		"ERROR-TYPE": item.errorType.asString default "",
+		"ERROR-MESSAGE": item.detailedDescription
+	})
+} 
+
+else
+{
+"ERROR":
+	{
+	"APPLICATION-NAME": p('applicationName'),
+	"ENVIRONMENT": p('mule.env'),
+	"TIMESTAMP" : now(),
+	"TRANSACTION-ID" : vars.correlationId,
+	"ERROR-CODE" : (if(!isEmpty(vars.httpStatus)) vars.httpStatus else (flatten([message.error])..statusCode[0])) default 500,
+	"ERROR-TYPE": error.errorType.identifier default "",
+	"ERROR-MESSAGE": responseDescription,
+	("REQUEST-PAYLOAD": vars.originalPayload) if ((vars.originalPayload) != null and !(isEmpty( vars.originalPayload))),
+	 ("QUERY-PARAMS": vars.queryParams) if (vars.queryParams != null and vars.queryParams != {}),
+	 ("URI-PARAMS": vars.uriParams) if (vars.uriParams != null and vars.uriParams != {}),
+	}
+
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="Flow Reference to log-error-details"
+			doc:id="5c2f06a6-cf9f-447d-a362-9bd4fa67b676"
+			name="log-error-details" />
+	</sub-flow>
+</mule>

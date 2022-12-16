@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_5f3c6743_cdbd_440f_a123_725cf128a735_Output_Payload = {| "output": String |}
+

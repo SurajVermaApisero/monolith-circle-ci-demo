@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd">
+	<secure-properties:config name="securePropertiesConfig" doc:name="Secure Properties Config" doc:id="99d425e6-4d86-4e9e-8d4d-d4d8bdd7e6f3" file="secure/properties/secure-${mule.env}.yaml" key="${mule.key}">
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="164eef22-5674-4008-b02f-3228c2e0fa56" file="properties/${mule.env}.yaml" />
+	<global-property doc:name="Global Property" doc:id="0a4ef89e-2dd5-43c5-8e01-ab8fd6ce201c" name="mule.env" value="DEV" />
+	<global-property doc:name="Global Property" doc:id="05fa644b-57a3-4ed4-b668-21dcb82cdebc" name="mule.key" value="monolith@1234" />
+	<http:listener-config name="httpsListenerConfig" doc:name="HTTP Listener config" doc:id="1d93b8b5-bd25-47c1-b0b9-5a545312be79" >
+		<http:listener-connection protocol="HTTPS" host="0.0.0.0" port="${https.port}" readTimeout="${https.readTimeout}">
+			<tls:context >
+				<tls:key-store type="jks" path="${tls.keystore.path}" alias="${tls.keystore.alias}" keyPassword="${secure::tls.keystore.keyPassword}" password="${secure::tls.keystore.storePassword}"/>
+			</tls:context>
+		</http:listener-connection>
+	</http:listener-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="3744f2bc-0f18-4d8a-b570-08b9690abac5" file="properties/common.yaml" />
+</mule>
